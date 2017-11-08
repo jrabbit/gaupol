@@ -12,3 +12,5 @@ data/patterns/*.line-break
 dist
 locale
 po/LINGUAS
+*.egg-info
+*.pyc
