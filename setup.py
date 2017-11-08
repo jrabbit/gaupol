@@ -1,11 +1,19 @@
 #! /usr/bin/env python
 
+import os
+import re
+
 from setuptools import setup
 
-from aeidon import __version__
+
+def get_aeidon_version():
+    """Return version number from aeidon/__init__.py."""
+    path = os.path.join("aeidon", "__init__.py")
+    text = open(path, "r", encoding="utf_8").read()
+    return re.search(r"__version__ *= *['\"](.*?)['\"]", text).group(1)
 
 setup(name="aeidon",
-      version=__version__,
+      version=get_aeidon_version(),
       packages=["aeidon",],
       author="Osmo Salomaa",
       author_email="otsaloma@iki.fi",
