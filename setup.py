@@ -1,19 +1,9 @@
 #! /usr/bin/env python
 
-import os
-import re
-
 from setuptools import setup
 
-
-def get_aeidon_version():
-    """Return version number from aeidon/__init__.py."""
-    path = os.path.join("aeidon", "__init__.py")
-    text = open(path, "r", encoding="utf_8").read()
-    return re.search(r"__version__ *= *['\"](.*?)['\"]", text).group(1)
-
 setup(name="aeidon",
-      version=get_aeidon_version(),
+      version="1.2.1",
       packages=["aeidon",],
       author="Osmo Salomaa",
       author_email="otsaloma@iki.fi",
@@ -23,3 +13,4 @@ setup(name="aeidon",
                    "Topic :: Multimedia :: Video",
                    "Programming Language :: Python :: 3",]
       )
+
