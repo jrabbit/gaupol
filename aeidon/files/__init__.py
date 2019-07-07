@@ -31,15 +31,17 @@ from .subviewer2 import SubViewer2
 from .tmplayer   import TMPlayer
 from .webvtt     import WebVTT
 
-__all__ = ["SubStationAlpha",
-           "AdvSubStationAlpha",
-           "LRC",
-           "MicroDVD",
-           "MPL2",
-           "SubRip",
-           "SubViewer2",
-           "TMPlayer",
-           "WebVTT"]
+__all__ = [
+    "SubStationAlpha",
+    "AdvSubStationAlpha",
+    "LRC",
+    "MicroDVD",
+    "MPL2",
+    "SubRip",
+    "SubViewer2",
+    "TMPlayer",
+    "WebVTT",
+]
 
 def add(cls):
     """Add a new :class:`aeidon.SubtitleFile` class."""
@@ -51,5 +53,5 @@ def new(format, path, encoding, newline=None):
     for cls in map(eval, __all__):
         if cls.format == format:
             return cls(path, encoding, newline)
-    raise ValueError("Format {} not found"
-                     .format(repr(format)))
+    raise ValueError("Format {!r} not found"
+                     .format(format))

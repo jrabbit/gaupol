@@ -39,7 +39,7 @@ class PreviewAgent(aeidon.Delegate):
     def _handle_output(self, process, fout, command):
         """Handle output of finished `process`."""
         fout.close()
-        with open(fout.name, "r") as f:
+        with open(fout.name, "r", errors="replace") as f:
             output = f.read().splitlines()
         output = "\n".join(output[:100])
         print("\nPREVIEW: {}\n{}".format(command, output))
@@ -53,7 +53,7 @@ class PreviewAgent(aeidon.Delegate):
         """Preview from selected position with a video player."""
         page = self.get_current_page()
         rows = page.view.get_selected_rows()
-        row = (rows[0] if rows else 0)
+        row = rows[0] if rows else 0
         position = page.project.subtitles[row].start
         col = page.view.get_focus()[1]
         if col == page.view.columns.TRAN_TEXT:
@@ -67,7 +67,7 @@ class PreviewAgent(aeidon.Delegate):
         """Preview from `position` with a video player."""
         command = gaupol.util.get_preview_command()
         offset = gaupol.conf.preview.offset
-        encoding = ("utf_8" if gaupol.conf.preview.force_utf_8 else None)
+        encoding = "utf_8" if gaupol.conf.preview.force_utf_8 else None
         try:
             process, command, fout = page.project.preview(
                 position, doc, command, offset, encoding, temp)

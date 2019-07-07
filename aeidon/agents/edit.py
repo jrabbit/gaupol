@@ -42,7 +42,7 @@ class EditAgent(aeidon.Delegate):
             first_start = 0.0
             if self.subtitles:
                 start = self.subtitles[0].start_seconds
-                first_start = (0.0 if start >= 0 else start - 3.0)
+                first_start = 0.0 if start >= 0 else start - 3.0
                 if rindices[0] > 0:
                     subtitle = self.subtitles[rindices[0] - 1]
                     first_start = subtitle.end_seconds
@@ -165,7 +165,7 @@ class EditAgent(aeidon.Delegate):
         subtitle_2.start = middle
         subtitle_2.end = subtitle.end
         self.remove_subtitles((index,), register=register)
-        indices = (index, index+1)
+        indices = (index, index + 1)
         subtitles = (subtitle_1, subtitle_2)
         self.insert_subtitles(indices, subtitles, register=register)
         self.group_actions(register, 2, _("Splitting subtitle"))

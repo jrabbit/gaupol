@@ -90,7 +90,6 @@ class PasteTextsAction(gaupol.Action):
     def _affirm_doable(self, application, page, selected_rows):
         """Raise :exc:`aeidon.AffirmationError` if action cannot be done."""
         aeidon.util.affirm(page is not None)
-        aeidon.util.affirm(not application.clipboard.is_empty())
         aeidon.util.affirm(selected_rows)
         col = page.view.get_focus()[1]
         aeidon.util.affirm(col is not None)
@@ -110,6 +109,7 @@ class ToggleDialogDashesAction(gaupol.Action):
 class ToggleItalicizationAction(gaupol.Action):
     def __init__(self):
         gaupol.Action.__init__(self, "toggle-italicization")
+        self.accelerators = ["<Control>I"]
         self.action_group = "unsafe"
     def _affirm_doable(self, application, page, selected_rows):
         aeidon.util.affirm(page is not None)

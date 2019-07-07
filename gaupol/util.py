@@ -51,8 +51,8 @@ def document_to_text_field(doc):
         return gaupol.fields.MAIN_TEXT
     if doc == aeidon.documents.TRAN:
         return gaupol.fields.TRAN_TEXT
-    raise ValueError("Invalid document: {}"
-                     .format(repr(doc)))
+    raise ValueError("Invalid document: {!r}"
+                     .format(doc))
 
 def flash_dialog(dialog):
     """Run `dialog`, destroy it and return response."""
@@ -66,8 +66,8 @@ def get_content_size(widget, font=None):
         return get_text_view_size(widget, font)
     if isinstance(widget, Gtk.TreeView):
         return get_tree_view_size(widget, font)
-    raise ValueError("Unsupported container type: {}"
-                     .format(repr(type(widget))))
+    raise ValueError("Unsupported container type: {!r}"
+                     .format(type(widget)))
 
 def get_font():
     """Return custom font or blank string."""
@@ -159,11 +159,16 @@ def gst_available():
               "Try installing gst-plugins-base.",
               file=sys.stderr)
         return False
-    if not Gst.ElementFactory.find("autovideosink"):
-        print("GStreamer found, but autovideosink missing.",
+    if not Gst.ElementFactory.find("gtksink"):
+        print("GStreamer found, but gtksink missing.",
               "Try installing gst-plugins-good.",
               file=sys.stderr)
         return False
+    if Gst.ElementFactory.find("vaapisink"):
+        print("GStreamer-vaapi found, known to sometimes cause trouble.",
+              "If video doesn't play, please try uninstalling it.",
+              "See https://github.com/otsaloma/gaupol/issues/79",
+              file=sys.stderr)
     return True
 
 @aeidon.deco.once
@@ -180,7 +185,7 @@ def hex_to_rgba(string):
     rgba = Gdk.RGBA()
     success = rgba.parse(string)
     if not success:
-        raise ValueError("Parsing string {} failed".format(repr(string)))
+        raise ValueError("Parsing string {!r} failed".format(string))
     return rgba
 
 def idle_add(function, *args, **kwargs):
@@ -286,16 +291,18 @@ def raise_default(expression):
 
 def rgba_to_hex(color):
     """Return hexadecimal string for :class:`Gdk.RGBA` `color`."""
-    return "#{:02x}{:02x}{:02x}".format(int(color.red   * 255),
-                                        int(color.green * 255),
-                                        int(color.blue  * 255))
+    return "#{:02x}{:02x}{:02x}".format(
+        int(color.red   * 255),
+        int(color.green * 255),
+        int(color.blue  * 255),
+    )
 
 def run_dialog(dialog):
     """Run `dialog` and return response."""
     return dialog.run()
 
 def scale_to_content(widget, min_nchar=0,  max_nchar=32768,
-                             min_nlines=0, max_nlines=32768, font=None):
+                     min_nlines=0, max_nlines=32768, font=None):
     """Set `widget's` size by content, but limited by `min` and `max`."""
     width, height = get_content_size(widget, font)
     width  = max(width, char_to_px(min_nchar, font))
@@ -305,7 +312,7 @@ def scale_to_content(widget, min_nchar=0,  max_nchar=32768,
     parent = widget.get_parent()
     if isinstance(parent, Gtk.ScrolledWindow):
         # Vaguely account for possible scrollbars.
-        return parent.set_size_request(width+24, height+24)
+        return parent.set_size_request(width + 24, height + 24)
     widget.set_size_request(width, height)
 
 def scale_to_size(widget, nchar, nlines, font=None):
@@ -315,7 +322,7 @@ def scale_to_size(widget, nchar, nlines, font=None):
     parent = widget.get_parent()
     if isinstance(parent, Gtk.ScrolledWindow):
         # Vaguely account for possible scrollbars.
-        return parent.set_size_request(width+24, height+24)
+        return parent.set_size_request(width + 24, height + 24)
     widget.set_size_request(width, height)
 
 def separate_combo(store, itr, data=None):
@@ -374,8 +381,8 @@ def text_field_to_document(field):
         return aeidon.documents.MAIN
     if field == gaupol.fields.TRAN_TEXT:
         return aeidon.documents.TRAN
-    raise ValueError("Invalid field: {}"
-                     .format(repr(field)))
+    raise ValueError("Invalid field: {!r}"
+                     .format(field))
 
 def tree_path_to_row(path):
     """
@@ -389,8 +396,8 @@ def tree_path_to_row(path):
         return path.get_indices()[0]
     if isinstance(path, str):
         return int(path)
-    raise TypeError("Bad type {} for path {}"
-                    .format(repr(type(path)), repr(path)))
+    raise TypeError("Bad type {!r} for path {!r}"
+                    .format(type(path), path))
 
 def tree_row_to_path(row):
     """Convert list row integer to a :class:`Gtk.TreePath`."""

@@ -3,11 +3,11 @@ __pycache__
 */*/__pycache__
 */*/*/__pycache__
 */*/*/*/__pycache__
-.cache
-*/.cache
-*/*/.cache
-*/*/*/.cache
-*/*/*/*/.cache
+.pytest_cache
+*/.pytest_cache
+*/*/.pytest_cache
+*/*/*/.pytest_cache
+*/*/*/*/.pytest_cache
 build
 data/extensions/*/*.extension
 data/gaupol.appdata.xml
@@ -17,6 +17,8 @@ data/patterns/*.common-error
 data/patterns/*.hearing-impaired
 data/patterns/*.line-break
 dist
+flatpak/.flatpak-builder
+flatpak/build
 locale
 po/*~
 po/LINGUAS

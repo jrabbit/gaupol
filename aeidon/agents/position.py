@@ -58,7 +58,7 @@ class PositionAgent(aeidon.Delegate):
             domax = maximum and end - start > maximum
             end = start + minimum if domin else end
             end = start + maximum if domax else end
-            end_max = (self.subtitles[index+1].start_seconds
+            end_max = (self.subtitles[index + 1].start_seconds
                        if index < len(self.subtitles) - 1
                        else 360000)
 
@@ -130,7 +130,7 @@ class PositionAgent(aeidon.Delegate):
         if aeidon.is_time(p1[1]): return self._get_time_transform(p1, p2)
         if aeidon.is_frame(p1[1]): return self._get_frame_transform(p1, p2)
         if aeidon.is_seconds(p1[1]): return self._get_seconds_transform(p1, p2)
-        raise ValueError("Bad position argument: {}".format(repr(p1)))
+        raise ValueError("Bad position argument: {!r}".format(p1))
 
     @aeidon.deco.export
     @aeidon.deco.revertable

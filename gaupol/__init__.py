@@ -17,7 +17,7 @@
 
 """GTK+ user interface for the Gaupol subtitle editor."""
 
-__version__ = "1.2"
+__version__ = "1.6"
 COMBO_SEPARATOR = "<separator/>"
 
 import sys
@@ -25,7 +25,7 @@ import warnings
 
 if hasattr(sys, "frozen"):
     # Avoid error trying to write to non-existent stderr.
-    # http://stackoverflow.com/a/35773092
+    # https://stackoverflow.com/a/35773092
     warnings.simplefilter("ignore")
 
 import aeidon
@@ -38,8 +38,6 @@ for module, version in {
     "Gst": "1.0",
     "GstPbutils": "1.0",
     "GstVideo": "1.0",
-    "GdkX11": "3.0",
-    "GdkWin32": "3.0",
     "GtkSpell": "3.0",
 }.items():
     with aeidon.util.silent(Exception):
@@ -57,7 +55,7 @@ from gaupol import util
 from gaupol.enums import *
 from gaupol.errors import *
 from gaupol.attrdict import *
-from gaupol.config import *
+from gaupol.config import ConfigurationStore
 conf = ConfigurationStore()
 from gaupol import style
 from gaupol import ruler
@@ -98,11 +96,17 @@ from gaupol.extension import *
 from gaupol.extensionman import *
 from gaupol import agents
 from gaupol.application import *
-from gaupol.applicationman import *
+from gaupol.applicationman import ApplicationManager
 from gaupol.unittest import *
 
 def main(args):
     """Initialize application."""
     global appman
+    # Needed to see application icon on Wayland, while we don't yet
+    # use the reverse domain application ID with Gtk.Application.
+    # https://wiki.gnome.org/Projects/GnomeShell/ApplicationBased
+    # https://github.com/otsaloma/gaupol/issues/62
+    GLib.set_prgname("gaupol")
+    aeidon.i18n.bind()
     appman = ApplicationManager(args)
     raise SystemExit(appman.run())

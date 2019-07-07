@@ -22,6 +22,7 @@ import collections
 import contextlib
 import inspect
 import locale
+import mimetypes
 import os
 import random
 import re
@@ -32,11 +33,23 @@ import sys
 import traceback
 import urllib.parse
 
+VIDEO_FILE_EXTENSIONS = [
+    ".avi",
+    ".flv",
+    ".mkv",
+    ".mov",
+    ".mp4",
+    ".ogg",
+    ".ogv",
+    ".vob",
+    ".webm",
+]
+
 
 def affirm(value):
     """Raise :exc:`aeidon.AffirmationError` if value evaluates to ``False``."""
     if not value:
-        raise aeidon.AffirmationError
+        raise aeidon.AffirmationError("Not True: {!r}".format(value))
 
 @contextlib.contextmanager
 def atomic_open(path, mode="w", *args, **kwargs):
@@ -151,8 +164,8 @@ def detect_format(path, encoding):
             for format, re_id in re_ids:
                 if re_id.search(line) is not None:
                     return format
-    raise aeidon.FormatError("Failed to detect format of file {}"
-                             .format(repr(path)))
+    raise aeidon.FormatError("Failed to detect format of file {!r}"
+                             .format(path))
 
 def detect_newlines(path):
     """Detect and return the newline type of file at `path` or ``None``."""
@@ -286,7 +299,7 @@ def get_unique(lst, keep_last=False):
     """Return `lst` with duplicates removed."""
     if keep_last:
         return list(reversed(get_unique(list(reversed(lst)))))
-    # http://stackoverflow.com/a/7961425
+    # https://stackoverflow.com/a/7961425
     return list(collections.OrderedDict.fromkeys(lst))
 
 def install_module(name, obj):
@@ -298,6 +311,16 @@ def install_module(name, obj):
         aeidon.util.install_module("foo", lambda: None)
     """
     aeidon.__dict__[name] = inspect.getmodule(obj)
+
+def is_video_file(path):
+    """Return ``True`` if `path` is a video file."""
+    if not os.path.isfile(path):
+        return False
+    # The mimetypes module doesn't work well on Windows,
+    # fall back on a custom list of video file extensions.
+    type, encoding = mimetypes.guess_type(path)
+    return ((type and type.startswith("video/")) or
+            path.lower().endswith(tuple(VIDEO_FILE_EXTENSIONS)))
 
 def last(iterator):
     """Return the last value from `iterator` or ``None``."""
@@ -311,14 +334,17 @@ def makedirs(directory):
 
     Raise :exc:`OSError` if unsuccessful.
     """
-    if os.path.isdir(directory): return
+    directory = os.path.abspath(directory)
+    if os.path.isdir(directory):
+        return directory
     try:
         os.makedirs(directory)
     except OSError as error:
-        print("Failed to create directory '{}': {}"
-              .format(directory, str(error)),
+        print("Failed to create directory {!r}: {!s}"
+              .format(directory, error),
               file=sys.stderr)
         raise # OSError
+    return directory
 
 def normalize_newlines(text):
     """Convert all newlines in `text` to "\\n"."""
@@ -425,8 +451,8 @@ def start_process(command, **kwargs):
     Return :class:`subprocess.Popen` instance.
     """
     # Use no environment on Windows due to a subprocess bug.
-    # http://bugzilla.gnome.org/show_bug.cgi?id=605805
-    env = (os.environ.copy() if sys.platform != "win32" else None)
+    # https://bugzilla.gnome.org/show_bug.cgi?id=605805
+    env = os.environ.copy() if sys.platform != "win32" else None
     try:
         return subprocess.Popen(command,
                                 shell=(sys.platform != "win32"),

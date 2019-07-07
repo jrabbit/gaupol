@@ -58,7 +58,7 @@ class OpenAgent(aeidon.Delegate):
         """Add `path` to recent files managed by the recent manager."""
         # XXX: The group field is not available for Python,
         # we cannot differentiate between main and translation files.
-        # http://bugzilla.gnome.org/show_bug.cgi?id=695970
+        # https://bugzilla.gnome.org/show_bug.cgi?id=695970
         uri = aeidon.util.path_to_uri(path)
         recent = Gtk.RecentData()
         recent.mime_type = format.mime_type
@@ -188,7 +188,12 @@ class OpenAgent(aeidon.Delegate):
 
         """Open main files from dragged URIs."""
         uris = selection_data.get_uris()
-        self.open_main(list(map(aeidon.util.uri_to_path, uris)))
+        paths = list(map(aeidon.util.uri_to_path, uris))
+        videos = list(filter(aeidon.util.is_video_file, paths))
+        subtitles = list(set(paths) - set(videos))
+        self.open_main(subtitles)
+        if self.get_current_page() and len(videos) == 1:
+            self.load_video(videos[0])
 
     @aeidon.deco.export
     @aeidon.deco.silent(gaupol.Default)
@@ -263,6 +268,12 @@ class OpenAgent(aeidon.Delegate):
         encodings = self._get_encodings(encoding)
         gaupol.util.set_cursor_busy(self.window)
         for path in aeidon.util.flatten([path]):
+            try:
+                # Skip files that are already open,
+                # but show a status message when that happens.
+                self._check_file_not_open(path)
+            except gaupol.Default:
+                continue
             try:
                 page = self._open_file(path, encodings, aeidon.documents.MAIN)
             except gaupol.Default:

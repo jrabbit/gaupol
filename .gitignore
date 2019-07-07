@@ -1,5 +1,6 @@
 *~
 .cache
+.pytest_cache
 __pycache__
 build
 data/extensions/*/*.extension
@@ -10,6 +11,8 @@ data/patterns/*.common-error
 data/patterns/*.hearing-impaired
 data/patterns/*.line-break
 dist
+flatpak/.flatpak-builder
+flatpak/build
 locale
 po/LINGUAS
 *.egg-info

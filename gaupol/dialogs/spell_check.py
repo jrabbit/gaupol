@@ -49,7 +49,7 @@ class SpellCheckDialog(gaupol.BuilderDialog):
     _max_replacements = 10000
     _personal_dir = os.path.join(aeidon.CONFIG_HOME_DIR, "spell-check")
 
-    _widgets = (
+    _widgets = [
         "add_button",
         "edit_button",
         "entry",
@@ -62,7 +62,7 @@ class SpellCheckDialog(gaupol.BuilderDialog):
         "grid",
         "text_view",
         "tree_view",
-    )
+    ]
 
     def __init__(self, parent, application):
         """
@@ -189,8 +189,8 @@ class SpellCheckDialog(gaupol.BuilderDialog):
             self._checker = enchant.checker.SpellChecker(dictionary, "")
         except enchant.Error as error:
             self._show_error_dialog(str(error))
-            raise ValueError("Dictionary initialization failed for language {}"
-                             .format(repr(self._language)))
+            raise ValueError("Dictionary initialization failed for language {!r}"
+                             .format(self._language))
 
     def _init_dialog(self, parent):
         """Initialize the dialog."""
@@ -273,7 +273,7 @@ class SpellCheckDialog(gaupol.BuilderDialog):
     def _on_entry_changed(self, entry):
         """Populate suggestions based on text in `entry`."""
         word = entry.get_text()
-        suggestions = (self._checker.suggest(word) if word else [])
+        suggestions = self._checker.suggest(word) if word else []
         self._populate_tree_view(suggestions, select=False)
         self._replace_button.set_sensitive(bool(word))
         self._replace_all_button.set_sensitive(bool(word))

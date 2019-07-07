@@ -7,23 +7,25 @@ tools/update-translations
 msgmerge -UN po/fi.po po/gaupol.pot
 emacs po/fi.po
 tx push -s
-tx push -tf -l fi
-tx pull -a --minimum-perc=75
+tx push -tf --no-interactive -l fi
+tx pull -a --minimum-perc=50
+sed -i "s/charset=CHARSET/charset=UTF-8/" po/*.po
 tools/check-translations
 tools/check-translations | grep %
-git commit -a -m "Update translations"
+git add po/*.po po/*.pot; git status
+git commit -m "Update translations"
 
 # Check, test, do final edits and release.
 python3 -Wd bin/gaupol
-pyflakes bin/gaupol aeidon gaupol data/extensions/*/*.py *.py
+flake8 bin/gaupol aeidon gaupol data/extensions/*/*.py *.py
 py.test --tb=no aeidon gaupol data/extensions
 emacs */__init__.py data/extensions/*/*.in win32/gaupol.iss
-emacs NEWS.md TODO.md
+emacs NEWS.md TODO.md data/gaupol.appdata.xml.in
 sudo ./setup.py install --prefix=/usr/local clean
 /usr/local/bin/gaupol
 tools/release
 
-# Build Windows installer (see win32/RELEASING.md).
-# Add release notes and Windows installer on GitHub.
-# Update web site: <https://otsaloma.io/gaupol/>.
+# Update Flatpak, website.
+# https://github.com/flathub/io.otsaloma.gaupol
+# https://github.com/otsaloma/gaupol-www
 ```

@@ -30,14 +30,14 @@ class PositionShiftDialog(gaupol.BuilderDialog):
 
     """Base class for dialogs for shifting positions."""
 
-    _widgets = (
+    _widgets = [
         "amount_spin",
         "current_radio",
         "preview_button",
         "selected_radio",
         "to_end_radio",
         "unit_label",
-    )
+    ]
 
     def __init__(self, parent, application):
         """Initialize a :class:`PositionShiftDialog` instance."""
@@ -51,7 +51,7 @@ class PositionShiftDialog(gaupol.BuilderDialog):
         """Return row to start preview from."""
         page = self.application.get_current_page()
         rows = page.view.get_selected_rows()
-        return (rows[0] if rows else 0)
+        return rows[0] if rows else 0
 
     def _get_target(self):
         """Return the selected target."""

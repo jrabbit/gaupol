@@ -31,7 +31,7 @@ class EditorPage(aeidon.Delegate, gaupol.BuilderDialog):
 
     """Editor preferences page."""
 
-    _widgets = (
+    _widgets = [
         "editor_default_font_check",
         "editor_font_button",
         "editor_font_hbox",
@@ -40,7 +40,7 @@ class EditorPage(aeidon.Delegate, gaupol.BuilderDialog):
         "editor_length_edit_check",
         "editor_length_hbox",
         "editor_spell_check_check",
-    )
+    ]
 
     def __init__(self, master, application):
         """Initialize an :class:`EditorPage` instance."""
@@ -74,7 +74,7 @@ class EditorPage(aeidon.Delegate, gaupol.BuilderDialog):
         use_custom = gaupol.conf.editor.use_custom_font
         self._default_font_check.set_active(not use_custom)
         self._font_hbox.set_sensitive(use_custom)
-        self._font_button.set_font_name(self._get_custom_font())
+        self._font_button.set_font(self._get_custom_font())
         show_cell = gaupol.conf.editor.show_lengths_cell
         show_edit = gaupol.conf.editor.show_lengths_edit
         self._length_hbox.set_sensitive(show_cell or show_edit)
@@ -127,13 +127,13 @@ class ExtensionPage(aeidon.Delegate, gaupol.BuilderDialog):
 
     """Extension activation and preferences page."""
 
-    _widgets = (
+    _widgets = [
         "extensions_about_button",
         "extensions_help_button",
         "extensions_preferences_button",
         "extensions_toolbar",
         "extensions_tree_view",
-    )
+    ]
 
     def __init__(self, master, application):
         """Initialize an :class:`ExtensionPage` instance."""
@@ -265,7 +265,7 @@ class FilePage(aeidon.Delegate, gaupol.BuilderDialog):
 
     """File preferences page."""
 
-    _widgets = (
+    _widgets = [
         "file_add_button",
         "file_auto_check",
         "file_down_button",
@@ -274,7 +274,7 @@ class FilePage(aeidon.Delegate, gaupol.BuilderDialog):
         "file_toolbar",
         "file_tree_view",
         "file_up_button",
-    )
+    ]
 
     def __init__(self, master, application):
         """Initialize a :class:`FilePage` instance."""
@@ -354,10 +354,10 @@ class FilePage(aeidon.Delegate, gaupol.BuilderDialog):
         """Move the selected fallback encoding down."""
         row = self._get_selected_row()
         encodings = gaupol.conf.encoding.fallback
-        encodings.insert(row+1, encodings.pop(row))
+        encodings.insert(row + 1, encodings.pop(row))
         self._reload_tree_view()
         self._tree_view.grab_focus()
-        self._tree_view.set_cursor(row+1)
+        self._tree_view.set_cursor(row + 1)
 
     def _on_locale_check_toggled(self, check_button):
         """Save locale encoding usage."""
@@ -394,7 +394,7 @@ class FilePage(aeidon.Delegate, gaupol.BuilderDialog):
         """Set the fallback tree view button sensitivities."""
         store = self._tree_view.get_model()
         row = self._get_selected_row()
-        row = (-1 if row is None else row)
+        row = -1 if row is None else row
         self._remove_button.set_sensitive(row >= 0)
         self._up_button.set_sensitive(row > 0)
         self._down_button.set_sensitive(0 <= row < len(store) - 1)
@@ -404,12 +404,12 @@ class PreviewPage(aeidon.Delegate, gaupol.BuilderDialog):
 
     """Preview preferences page."""
 
-    _widgets = (
+    _widgets = [
         "preview_app_combo",
         "preview_command_entry",
         "preview_force_utf_8_check",
         "preview_offset_spin",
-    )
+    ]
 
     def __init__(self, master, application):
         """Initialize a :class:`PreviewPage` instance."""
@@ -476,7 +476,7 @@ class VideoPage(aeidon.Delegate, gaupol.BuilderDialog):
 
     """Video preferences page."""
 
-    _widgets = (
+    _widgets = [
         "video_seek_spin",
         "video_subtitle_bg_check",
         "video_subtitle_color_button",
@@ -484,7 +484,7 @@ class VideoPage(aeidon.Delegate, gaupol.BuilderDialog):
         "video_time_bg_check",
         "video_time_color_button",
         "video_time_font_button",
-    )
+    ]
 
     def __init__(self, master, application):
         """Initialize a :class:`PreviewPage` instance."""
@@ -505,9 +505,9 @@ class VideoPage(aeidon.Delegate, gaupol.BuilderDialog):
     def _init_values(self):
         """Initialize default values for widgets."""
         font = self._get_custom_font(self.conf.subtitle_font)
-        self._subtitle_font_button.set_font_name(font)
+        self._subtitle_font_button.set_font(font)
         font = self._get_custom_font(self.conf.time_font)
-        self._time_font_button.set_font_name(font)
+        self._time_font_button.set_font(font)
         self._subtitle_bg_check.set_active(self.conf.subtitle_background)
         color = gaupol.util.hex_to_rgba(self.conf.subtitle_color)
         color.alpha = self.conf.subtitle_alpha
@@ -555,7 +555,7 @@ class PreferencesDialog(gaupol.BuilderDialog):
 
     """Dialog for editing preferences."""
 
-    _widgets = ("notebook",)
+    _widgets = ["notebook"]
 
     def __init__(self, parent, application):
         """Initialize a :class:`PreferencesDialog` instance."""

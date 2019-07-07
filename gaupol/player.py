@@ -19,18 +19,15 @@
 
 import aeidon
 import gaupol
+import time
 
 from aeidon.i18n   import _
-from gi.repository import Gdk
+from gi.repository import GLib
 from gi.repository import Gtk
 
 with aeidon.util.silent(Exception):
     from gi.repository import Gst
     from gi.repository import GstVideo
-
-with aeidon.util.silent(Exception):
-    from gi.repository import GdkX11
-    from gi.repository import GdkWin32
 
 __all__ = ("VideoPlayer",)
 
@@ -53,7 +50,6 @@ class VideoPlayer(aeidon.Observable):
     :ivar _time_overlay: GStreamer "timeoverlay" element
     :ivar volume: Current audio stream volume
     :ivar widget: :class:`Gtk.DrawingArea` used to render video
-    :ivar _xid: `widget`'s X resource (window)
 
     Signals and their arguments for callback functions:
      * ``state-changed``: player new state
@@ -74,12 +70,11 @@ class VideoPlayer(aeidon.Observable):
         self._text_overlay = None
         self._time_overlay = None
         self.widget = None
-        self._xid = None
+        self._init_widget()
         self._init_text_overlay()
         self._init_time_overlay()
         self._init_pipeline()
         self._init_bus()
-        self._init_widget()
 
     @property
     def audio_track(self):
@@ -87,7 +82,7 @@ class VideoPlayer(aeidon.Observable):
         track = self._playbin.props.current_audio
         # If at the default value, the first track is used,
         # which is (probably?) zero.
-        return (0 if track == -1 else track)
+        return 0 if track == -1 else track
 
     @audio_track.setter
     def audio_track(self, track):
@@ -106,9 +101,11 @@ class VideoPlayer(aeidon.Observable):
         """
         if self._in_default_segment: return
         # XXX: There's got to be a simpler way to do this.
-        pos = self.get_position(aeidon.modes.SECONDS) * Gst.SECOND
         seek_flags = Gst.SeekFlags.FLUSH | Gst.SeekFlags.ACCURATE
+        pos = self.get_position(aeidon.modes.SECONDS) * Gst.SECOND
         end = self.get_duration(aeidon.modes.SECONDS) * Gst.SECOND
+        if pos is None: return
+        if end is None: return
         self._playbin.seek(rate=1.0,
                            format=Gst.Format.TIME,
                            flags=seek_flags,
@@ -126,7 +123,14 @@ class VideoPlayer(aeidon.Observable):
 
     def get_duration(self, mode=None):
         """Return duration of video stream or ``None``."""
-        success, duration = self._playbin.query_duration(Gst.Format.TIME)
+        q = self._playbin.query_duration
+        for i in range(100):
+            # Querying duration sometimes fails very unreproducibly,
+            # likely due to a particular pipeline state or state change.
+            # Try repeated times, hoping to pass the bad state.
+            success, duration = q(Gst.Format.TIME)
+            if success: break
+            time.sleep(1/100)
         if not success: return None
         if mode is None: return duration
         duration = duration / Gst.SECOND
@@ -136,11 +140,18 @@ class VideoPlayer(aeidon.Observable):
             return self.calc.to_time(duration)
         if mode == aeidon.modes.FRAME:
             return self.calc.to_frame(duration)
-        raise ValueError("Invalid mode: {}".format(repr(mode)))
+        raise ValueError("Invalid mode: {!r}".format(mode))
 
     def get_position(self, mode=None):
         """Return current position in video stream or ``None``."""
-        success, pos = self._playbin.query_position(Gst.Format.TIME)
+        q = self._playbin.query_position
+        for i in range(100):
+            # Querying position sometimes fails very unreproducibly,
+            # likely due to a particular pipeline state or state change.
+            # Try repeated times, hoping to pass the bad state.
+            success, pos = q(Gst.Format.TIME)
+            if success: break
+            time.sleep(1/100)
         if not success: return None
         if mode is None: return pos
         pos = pos / Gst.SECOND
@@ -150,13 +161,11 @@ class VideoPlayer(aeidon.Observable):
             return self.calc.to_time(pos)
         if mode == aeidon.modes.FRAME:
             return self.calc.to_frame(pos)
-        raise ValueError("Invalid mode: {}".format(repr(mode)))
+        raise ValueError("Invalid mode: {!r}".format(mode))
 
     def _init_bus(self):
         """Initialize the GStreamer message bus."""
         bus = self._playbin.get_bus()
-        bus.enable_sync_message_emission()
-        bus.connect("sync-message::element", self._on_bus_sync_message)
         bus.add_signal_watch()
         bus.connect("message::eos", self._on_bus_message_eos)
         bus.connect("message::error", self._on_bus_message_error)
@@ -167,7 +176,8 @@ class VideoPlayer(aeidon.Observable):
         self._playbin = Gst.ElementFactory.make("playbin", None)
         if gaupol.conf.video_player.volume is not None:
             self.volume = gaupol.conf.video_player.volume
-        sink = Gst.ElementFactory.make("autovideosink", None)
+        sink = Gst.ElementFactory.make("gtksink", None)
+        self.widget.pack_start(sink.props.widget, True, True, 0)
         bin = Gst.Bin()
         bin.add(self._time_overlay)
         bin.add(self._text_overlay)
@@ -214,7 +224,7 @@ class VideoPlayer(aeidon.Observable):
 
     def _init_widget(self):
         """Initialize the rendering widget."""
-        self.widget = Gtk.DrawingArea()
+        self.widget = Gtk.Box()
         style = self.widget.get_style_context()
         style.add_class("gaupol-video-background")
         gaupol.style.load_css(self.widget)
@@ -251,36 +261,30 @@ class VideoPlayer(aeidon.Observable):
         self.emit("state-changed", new)
         self._prev_state = new
 
-    def _on_bus_sync_message(self, bus, message):
-        """Handle sync messages from the bus."""
-        struct = message.get_structure()
-        if struct.get_name() == "prepare-window-handle":
-            message.src.set_window_handle(self._xid)
-
     def _on_conf_notify_subtitle_property(self, *args):
-       """Update subtitle text overlay properties."""
-       conf = gaupol.conf.video_player
-       self._text_overlay.props.font_desc = conf.subtitle_font
-       self._text_overlay.props.halignment = "center"
-       self._text_overlay.props.valignment = "bottom"
-       self._text_overlay.props.line_alignment = conf.line_alignment
-       self._text_overlay.props.shaded_background = conf.subtitle_background
-       alpha = "{:02x}".format(int(conf.subtitle_alpha * 255))
-       color = conf.subtitle_color.replace("#", "")
-       color = int(float.fromhex("".join((alpha, color))))
-       self._text_overlay.props.color = color
+        """Update subtitle text overlay properties."""
+        conf = gaupol.conf.video_player
+        self._text_overlay.props.font_desc = conf.subtitle_font
+        self._text_overlay.props.halignment = "center"
+        self._text_overlay.props.valignment = "bottom"
+        self._text_overlay.props.line_alignment = conf.line_alignment
+        self._text_overlay.props.shaded_background = conf.subtitle_background
+        alpha = "{:02x}".format(int(conf.subtitle_alpha * 255))
+        color = conf.subtitle_color.replace("#", "")
+        color = int(float.fromhex("".join((alpha, color))))
+        self._text_overlay.props.color = color
 
     def _on_conf_notify_time_property(self, *args):
-       """Update time overlay properties."""
-       conf = gaupol.conf.video_player
-       self._time_overlay.props.font_desc = conf.time_font
-       self._time_overlay.props.halignment = "right"
-       self._time_overlay.props.valignment = "top"
-       self._time_overlay.props.shaded_background = conf.time_background
-       alpha = "{:02x}".format(int(conf.time_alpha * 255))
-       color = conf.time_color.replace("#", "")
-       color = int(float.fromhex("".join((alpha, color))))
-       self._time_overlay.props.color = color
+        """Update time overlay properties."""
+        conf = gaupol.conf.video_player
+        self._time_overlay.props.font_desc = conf.time_font
+        self._time_overlay.props.halignment = "right"
+        self._time_overlay.props.valignment = "top"
+        self._time_overlay.props.shaded_background = conf.time_background
+        alpha = "{:02x}".format(int(conf.time_alpha * 255))
+        color = conf.time_color.replace("#", "")
+        color = int(float.fromhex("".join((alpha, color))))
+        self._time_overlay.props.color = color
 
     def pause(self):
         """Pause."""
@@ -296,6 +300,7 @@ class VideoPlayer(aeidon.Observable):
         seek_flags = Gst.SeekFlags.FLUSH | Gst.SeekFlags.ACCURATE
         start = max(0, self.calc.to_seconds(start)) * Gst.SECOND
         duration = self.get_duration(aeidon.modes.SECONDS)
+        if duration is None: return
         end = min(duration, self.calc.to_seconds(end)) * Gst.SECOND
         self._playbin.seek(rate=1.0,
                            format=Gst.Format.TIME,
@@ -334,10 +339,6 @@ class VideoPlayer(aeidon.Observable):
         """Set the URI of the file to play."""
         self.ready = False
         self._playbin.props.uri = uri
-        # XXX: On Windows, we'd need HWND instead of XID,
-        # but there seems to be no clear way to do this.
-        # http://stackoverflow.com/q/23021327/653825
-        self._xid = self.widget.get_window().get_xid()
         self.subtitle_text = ""
         try:
             # Find out the exact framerate to be able
@@ -372,6 +373,7 @@ class VideoPlayer(aeidon.Observable):
         """Set `text` to the subtitle overlay."""
         self.subtitle_text_raw = text
         text = aeidon.RE_ANY_TAG.sub("", text)
+        text = GLib.markup_escape_text(text)
         self._text_overlay.props.text = text
 
     @property

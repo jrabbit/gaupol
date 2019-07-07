@@ -36,16 +36,16 @@ class _Ruler:
 
     def get_char_length(self, text, strip=False, floor=False):
         """Return length of `text` measured in characters."""
-        text = (aeidon.RE_ANY_TAG.sub("", text) if strip else text)
+        text = aeidon.RE_ANY_TAG.sub("", text) if strip else text
         return len(text.replace("\n", " "))
 
     def get_em_length(self, text, strip=False, floor=False):
         """Return length of `text` measured in ems."""
-        text = (aeidon.RE_ANY_TAG.sub("", text) if strip else text)
+        text = aeidon.RE_ANY_TAG.sub("", text) if strip else text
         self._label.set_text(text.replace("\n", " "))
         width = self._label.get_preferred_width()[1]
         length = width / self._em_length
-        return (int(length) if floor else length)
+        return int(length) if floor else length
 
     def _update_em_length(self):
         """Update the length of em based on font rendering."""
@@ -69,11 +69,11 @@ def _on_text_view_draw(text_view, cairoc):
     lengths = get_lengths(text)
     layout = Pango.Layout(text_view.get_pango_context())
     # XXX: Lines overlap if we don't set a spacing!?
-    layout.set_spacing(2*Pango.SCALE)
+    layout.set_spacing(2 * Pango.SCALE)
     layout.set_markup("\n".join(str(x) for x in lengths), -1)
     layout.set_alignment(Pango.Alignment.RIGHT)
     width = layout.get_pixel_size()[0]
-    text_view.set_border_window_size(Gtk.TextWindowType.RIGHT, width+6)
+    text_view.set_border_window_size(Gtk.TextWindowType.RIGHT, width + 6)
     x, y = text_view.window_to_buffer_coords(Gtk.TextWindowType.RIGHT, 2, 4)
     x += text_view.get_border_width()
     with aeidon.util.silent(AttributeError):
@@ -88,7 +88,7 @@ def connect_text_view(text_view):
     layout = Pango.Layout(context)
     layout.set_text("8", -1)
     width = layout.get_pixel_size()[0]
-    text_view.set_border_window_size(Gtk.TextWindowType.RIGHT, width+6)
+    text_view.set_border_window_size(Gtk.TextWindowType.RIGHT, width + 6)
     handler_id = text_view.connect_after("draw", _on_text_view_draw)
     text_view.gaupol_ruler_handler_id = handler_id
     return handler_id
@@ -107,8 +107,8 @@ def get_length_function(unit):
         return _ruler.get_char_length
     if unit == gaupol.length_units.EM:
         return _ruler.get_em_length
-    raise ValueError("Invalid length unit: {}"
-                     .format(repr(unit)))
+    raise ValueError("Invalid length unit: {!r}"
+                     .format(unit))
 
 def get_lengths(text):
     """Return a sequence of floored line lengths without tags."""

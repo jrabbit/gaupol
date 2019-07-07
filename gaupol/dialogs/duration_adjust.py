@@ -29,7 +29,7 @@ class DurationAdjustDialog(gaupol.BuilderDialog):
 
     """Dialog for lengthening or shortening durations."""
 
-    _widgets = (
+    _widgets = [
         "all_radio",
         "current_radio",
         "gap_check",
@@ -42,7 +42,7 @@ class DurationAdjustDialog(gaupol.BuilderDialog):
         "selected_radio",
         "shorten_check",
         "speed_spin",
-    )
+    ]
 
     def __init__(self, parent, application):
         """Initialize a :class:`DurationAdjustDialog` instance."""
@@ -65,7 +65,7 @@ class DurationAdjustDialog(gaupol.BuilderDialog):
                 shorten=conf.shorten,
                 maximum=(conf.maximum if conf.use_maximum else None),
                 minimum=(conf.minimum if conf.use_minimum else None),
-                gap=(conf.gap if conf.use_gap else None))
+                gap=conf.gap if conf.use_gap else None)
             self.application.flash_message(n_(
                 "Adjusted duration of {:d} subtitle",
                 "Adjusted durations of {:d} subtitles",

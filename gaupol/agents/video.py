@@ -139,7 +139,7 @@ class VideoAgent(aeidon.Delegate):
             self.notebook.get_window().get_width()
             if orientation == Gtk.Orientation.HORIZONTAL
             else self.notebook.get_window().get_height())
-        self.paned.set_position(int(size/2))
+        self.paned.set_position(int(size / 2))
         self.get_action("toggle-player").set_state(True)
 
     def _init_update_handlers(self):
@@ -153,22 +153,9 @@ class VideoAgent(aeidon.Delegate):
         ]
 
     @aeidon.deco.export
-    def _on_load_video_activate(self, *args):
+    def load_video(self, path):
         """Load a video file."""
-        gaupol.util.set_cursor_busy(self.window)
         page = self.get_current_page()
-        dialog = gaupol.VideoDialog(
-            self.window, title=_("Load Video"), button_label=_("_Load"))
-        if page.project.main_file is not None:
-            directory = os.path.dirname(page.project.main_file.path)
-            dialog.set_current_folder(directory)
-        if page.project.video_path is not None:
-            dialog.set_filename(page.project.video_path)
-        gaupol.util.set_cursor_normal(self.window)
-        response = gaupol.util.run_dialog(dialog)
-        path = dialog.get_filename()
-        dialog.destroy()
-        if response != Gtk.ResponseType.OK: return
         page.project.video_path = path
         if self.player is None:
             self._init_player_widgets()
@@ -190,6 +177,25 @@ class VideoAgent(aeidon.Delegate):
         self.player.play()
         if not gaupol.conf.video_player.autoplay:
             self.player.pause()
+
+    @aeidon.deco.export
+    def _on_load_video_activate(self, *args):
+        """Load a video file."""
+        gaupol.util.set_cursor_busy(self.window)
+        page = self.get_current_page()
+        dialog = gaupol.VideoDialog(
+            self.window, title=_("Load Video"), button_label=_("_Load"))
+        if page.project.main_file is not None:
+            directory = os.path.dirname(page.project.main_file.path)
+            dialog.set_current_folder(directory)
+        if page.project.video_path is not None:
+            dialog.set_filename(page.project.video_path)
+        gaupol.util.set_cursor_normal(self.window)
+        response = gaupol.util.run_dialog(dialog)
+        path = dialog.get_filename()
+        dialog.destroy()
+        if response != Gtk.ResponseType.OK: return
+        self.load_video(path)
 
     @aeidon.deco.export
     def _on_play_pause_activate(self, *args):
@@ -269,6 +275,7 @@ class VideoAgent(aeidon.Delegate):
     def _on_seek_next_activate(self, *args):
         """Seek to the start of the next subtitle."""
         pos = self.player.get_position(aeidon.modes.SECONDS)
+        if pos is None: return
         subtitles = list(filter(lambda x: x[0] > pos + 0.001, self._cache))
         if not subtitles: return
         self.player.seek(subtitles[0][0])
@@ -277,6 +284,7 @@ class VideoAgent(aeidon.Delegate):
     def _on_seek_previous_activate(self, *args):
         """Seek to the start of the previous subtitle."""
         pos = self.player.get_position(aeidon.modes.SECONDS)
+        if pos is None: return
         subtitles = list(filter(lambda x: x[1] < pos - 0.001, self._cache))
         if not subtitles: return
         self.player.seek(subtitles[-1][0])
@@ -288,7 +296,7 @@ class VideoAgent(aeidon.Delegate):
         rows = page.view.get_selected_rows()
         pos = page.project.subtitles[rows[-1]].end_seconds
         offset = gaupol.conf.video_player.context_length
-        self.player.seek(pos - offset)
+        self.player.seek(max(pos - offset, 0))
 
     @aeidon.deco.export
     def _on_seek_selection_start_activate(self, *args):
@@ -297,7 +305,7 @@ class VideoAgent(aeidon.Delegate):
         rows = page.view.get_selected_rows()
         pos = page.project.subtitles[rows[0]].start_seconds
         offset = gaupol.conf.video_player.context_length
-        self.player.seek(pos - offset)
+        self.player.seek(max(pos - offset, 0))
 
     def _on_seekbar_change_value(self, seekbar, scroll, value, data=None):
         """Seek to specified position in video."""
@@ -309,9 +317,13 @@ class VideoAgent(aeidon.Delegate):
     @aeidon.deco.export
     def _on_set_audio_language_activate(self, action, parameter):
         """Set the audio language to use."""
+        # Avoid freeze by pausing prior and playing after.
+        # https://github.com/otsaloma/gaupol/issues/58
+        self.player.pause()
         index = int(parameter.get_string())
         self.player.audio_track = index
         self._update_languages_menu()
+        self.player.play()
 
     def _on_volume_button_value_changed(self, button, value):
         """Update video player volume."""

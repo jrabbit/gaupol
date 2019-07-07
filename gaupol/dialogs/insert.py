@@ -29,7 +29,7 @@ class InsertDialog(gaupol.BuilderDialog):
 
     """Dialog for inserting new subtitles."""
 
-    _widgets = ("amount_spin", "position_combo", "position_label")
+    _widgets = ["amount_spin", "position_combo", "position_label"]
 
     def __init__(self, parent, application):
         """Initialize an :class:`InsertDialog` instance."""
@@ -60,7 +60,7 @@ class InsertDialog(gaupol.BuilderDialog):
     def _init_values(self):
         """Initialize default values for widgets."""
         self._amount_spin.set_value(1)
-        index = (0 if gaupol.conf.subtitle_insert.above else 1)
+        index = 0 if gaupol.conf.subtitle_insert.above else 1
         self._position_combo.set_active(index)
         page = self.application.get_current_page()
         sensitive = bool(page.project.subtitles)

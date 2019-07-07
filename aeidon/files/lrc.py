@@ -33,7 +33,7 @@ class LRC(aeidon.SubtitleFile):
 
     format = aeidon.formats.LRC
     mode = aeidon.modes.TIME
-    _re_line = re.compile("^\[(-?\d\d:\d\d.\d\d)\](.*)$")
+    _re_line = re.compile(r"^\[(-?\d\d:\d\d.\d\d)\](.*)$")
 
     def read(self):
         """
@@ -72,8 +72,8 @@ class LRC(aeidon.SubtitleFile):
             f.write(self.header.strip() + "\n\n")
         for subtitle in subtitles:
             start = subtitle.calc.round(subtitle.start_time, 2)
-            sign = ("-" if start.startswith("-") else "")
-            first = (4 if start.startswith("-") else 3)
+            sign = "-" if start.startswith("-") else ""
+            first = 4 if start.startswith("-") else 3
             start = sign + start[first:-1]
             text = subtitle.get_text(doc).replace("\n", " ")
             f.write("[{}]{}\n".format(start, text))

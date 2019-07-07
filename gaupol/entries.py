@@ -79,7 +79,7 @@ class TimeEntry(Gtk.Entry):
         pos = self.get_position()
         text = self.get_text()
         if pos == 0 and value.startswith("-"):
-            text = (text if text.startswith("-") else "-{}".format(text))
+            text = text if text.startswith("-") else "-{}".format(text)
         length = len(value)
         text = text[:pos] + value + text[pos+length:]
         text = text.replace(",", ".")
@@ -87,25 +87,25 @@ class TimeEntry(Gtk.Entry):
         self.set_text(text)
         self.set_position(pos)
         if length != 1: return
-        self.set_position(pos+1)
-        if len(text) > pos+1 and text[pos+1] in (":", "."):
-            self.set_position(pos+2)
+        self.set_position(pos + 1)
+        if len(text) > pos + 1 and text[pos+1] in (":", "."):
+            self.set_position(pos + 2)
 
     def _on_cut_clipboard(self, entry):
         """Change "cut-clipboard" signal to "copy-clipboard"."""
-        self.stop_emission("cut-clipboard")
+        self.stop_emission_by_name("cut-clipboard")
         self.emit("copy-clipboard")
 
     def _on_delete_text(self, entry, start_pos, end_pos):
         """Do not allow deleting text."""
-        self.stop_emission("delete-text")
+        self.stop_emission_by_name("delete-text")
         self.set_position(start_pos)
 
     def _on_key_press_event(self, entry, event):
         """Change numbers to zero if Backspace or Delete pressed."""
         keys = (Gdk.KEY_BackSpace, Gdk.KEY_Delete)
         if not event.keyval in keys: return
-        self.stop_emission("key-press-event")
+        self.stop_emission_by_name("key-press-event")
         if self.get_selection_bounds():
             gaupol.util.idle_add(self._zero_selection)
         elif event.keyval == Gdk.KEY_BackSpace:
@@ -115,12 +115,12 @@ class TimeEntry(Gtk.Entry):
 
     def _on_insert_text(self, entry, text, length, pos):
         """Insert `text` after validation."""
-        self.stop_emission("insert-text")
+        self.stop_emission_by_name("insert-text")
         gaupol.util.idle_add(self._insert_text, text)
 
     def _on_toggle_overwrite(self, entry):
         """Do not allow toggling overwrite."""
-        self.stop_emission("toggle-overwrite")
+        self.stop_emission_by_name("toggle-overwrite")
 
     @_blocked
     def _zero_next(self):

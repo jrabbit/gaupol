@@ -28,34 +28,21 @@ _countries = {}
 
 def _init_countries():
     """Initialize the dictionary mapping codes to names."""
-    # Prefer globally installed iso-codes, JSON over XML,
-    # fall back on possibly bundled JSON.
+    # Prefer globally installed, fall back on possibly bundled.
     path = "/usr/share/iso-codes/json/iso_3166-1.json"
     if os.path.isfile(path):
         return _init_countries_json(path)
-    path = "/usr/share/xml/iso-codes/iso_3166.xml"
-    if os.path.isfile(path):
-        return _init_countries_xml(path)
     path = os.path.join(aeidon.DATA_DIR, "iso-codes", "iso_3166-1.json")
     if os.path.isfile(path):
         return _init_countries_json(path)
 
 def _init_countries_json(path):
     """Initialize the dictionary mapping codes to names."""
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf_8") as f:
         iso = json.load(f)
     for country in iso["3166-1"]:
         code = country.get("alpha_2", None)
         name = country.get("name", None)
-        if not code or not name: continue
-        _countries[code] = name
-
-def _init_countries_xml(path):
-    """Initialize the dictionary mapping codes to names."""
-    import xml.etree.ElementTree as ET
-    for element in ET.parse(path).findall("iso_3166_entry"):
-        code = element.get("alpha_2_code", None)
-        name = element.get("name", None)
         if not code or not name: continue
         _countries[code] = name
 

@@ -18,21 +18,8 @@
 """Previewing subtitles with a video player."""
 
 import aeidon
-import mimetypes
 import os
 import string
-
-VIDEOFILE_EXTENSIONS = [
-    ".avi",
-    ".flv",
-    ".mkv",
-    ".mov",
-    ".mp4",
-    ".ogg",
-    ".ogv",
-    ".vob",
-    ".webm",
-]
 
 
 class PreviewAgent(aeidon.Delegate):
@@ -61,11 +48,7 @@ class PreviewAgent(aeidon.Delegate):
             path = os.path.join(dirname, name)
             root = os.path.splitext(name)[0]
             if not subname.startswith(root): continue
-            # The mimetypes module doesn't work well on Windows,
-            # fall back on a custom list of videfile extensions.
-            type, encoding = mimetypes.guess_type(path)
-            if ((type and type.startswith("video/")) or
-                path.lower().endswith(tuple(VIDEOFILE_EXTENSIONS))):
+            if aeidon.util.is_video_file(path):
                 self.video_path = path
                 return self.video_path
         return None
@@ -117,7 +100,7 @@ class PreviewAgent(aeidon.Delegate):
         fout = open(aeidon.temp.create(".output"), "w")
         seconds = max(0, self.calc.to_seconds(position) - offset)
         command = string.Template(command).safe_substitute(
-            MILLISECONDS=("{:.0f}".format(seconds*1000)),
+            MILLISECONDS=("{:.0f}".format(seconds * 1000)),
             SECONDS=("{:.3f}".format(seconds)),
             SUBFILE=aeidon.util.shell_quote(sub_path),
             VIDEOFILE=aeidon.util.shell_quote(self.video_path))

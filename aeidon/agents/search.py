@@ -80,7 +80,7 @@ class SearchAgent(aeidon.Delegate):
             # Proceed to the next document or raise StopIteration.
             self._match_passed = True
             doc = self._get_document(doc, next)
-            index = (min(indices) if next else max(indices))
+            index = min(indices) if next else max(indices)
             pos = None
 
     @aeidon.deco.export
@@ -92,8 +92,8 @@ class SearchAgent(aeidon.Delegate):
         Raise :exc:`StopIteration` if no (more) matches exist.
         Return tuple of index, document, match span.
         """
-        index = (0 if index is None else index)
-        doc = (self._docs[0] if doc is None else doc)
+        index = 0 if index is None else index
+        doc = self._docs[0] if doc is None else doc
         return self._find(index, doc, pos, next=True)
 
     @aeidon.deco.export
@@ -105,8 +105,8 @@ class SearchAgent(aeidon.Delegate):
         Raise :exc:`StopIteration` if no (more) matches exist.
         Return tuple of index, document, match span.
         """
-        index = (len(self.subtitles)-1 if index is None else index)
-        doc = (self._docs[-1] if doc is None else doc)
+        index = len(self.subtitles)-1 if index is None else index
+        doc = self._docs[-1] if doc is None else doc
         return self._find(index, doc, pos, next=False)
 
     def _get_document(self, doc, next):
@@ -131,8 +131,8 @@ class SearchAgent(aeidon.Delegate):
             raise StopIteration
         if not next and doc == aeidon.documents.TRAN:
             return aeidon.documents.MAIN
-        raise ValueError("Invalid document: {} or invalid next: {}"
-                         .format(repr(doc), repr(next)))
+        raise ValueError("Invalid document: {!r} or invalid next: {!r}"
+                         .format(doc, next))
 
     def _next_in_document(self, index, doc, pos=None):
         """
@@ -144,7 +144,7 @@ class SearchAgent(aeidon.Delegate):
         Return tuple of index, document, match span.
         """
         indices = self._indices or self.get_all_indices()
-        for index in range(index, max(indices)+1):
+        for index in range(index, max(indices) + 1):
             text = self.subtitles[index].get_text(doc)
             # Avoid resetting finder's match span.
             if text != self._finder.text:
@@ -181,7 +181,7 @@ class SearchAgent(aeidon.Delegate):
         Return tuple of index, document, match span.
         """
         indices = self._indices or self.get_all_indices()
-        for index in reversed(range(min(indices), index+1)):
+        for index in reversed(range(min(indices), index + 1)):
             text = self.subtitles[index].get_text(doc)
             # Avoid resetting finder's match span.
             if text != self._finder.text:
@@ -254,7 +254,7 @@ class SearchAgent(aeidon.Delegate):
                                register=register)
 
             self.set_action_description(register, _("Replacing all"))
-        if (len(list(counts.keys())) == 2) and all(counts.values()):
+        if len(list(counts.keys())) == 2 and all(counts.values()):
             self.group_actions(register, 2, _("Replacing all"))
         return sum(counts.values())
 
@@ -288,6 +288,6 @@ class SearchAgent(aeidon.Delegate):
         `indices` can be ``None`` to target all subtitles.
         `docs` can be ``None`` to target all documents.
         """
-        self._indices = (tuple(indices) if indices else None)
+        self._indices = tuple(indices) if indices else None
         self._docs = tuple(docs or aeidon.documents)
         self._wrap = wrap

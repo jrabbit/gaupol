@@ -36,7 +36,7 @@ from aeidon.i18n import _
 _encodings = (
     # TRANSLATORS: Most of the character encoding descriptions are copied from
     # gedit, which is translated to very many languages. Check the gedit .po
-    # files for a reference: <http://git.gnome.org/browse/gedit/tree/po/>.
+    # files for a reference: <https://gitlab.gnome.org/GNOME/gedit/tree/master/po>.
     ("ascii"          , "US-ASCII"        , _("English")),
     ("big5"           , "Big5"            , _("Chinese traditional")),
     ("big5hkscs"      , "Big5-HKSCS"      , _("Chinese traditional")),
@@ -143,8 +143,8 @@ def code_to_description(code):
     for item in _encodings:
         if item[CODE] == code:
             return item[DESC]
-    raise ValueError("Code {} not found"
-                     .format(repr(code)))
+    raise ValueError("Code {!r} not found"
+                     .format(code))
 
 def code_to_long_name(code):
     """Convert encoding `code` to localized long name."""
@@ -154,16 +154,16 @@ def code_to_long_name(code):
                     .format(name=item[NAME],
                             description=item[DESC]))
 
-    raise ValueError("Code {} not found"
-                     .format(repr(code)))
+    raise ValueError("Code {!r} not found"
+                     .format(code))
 
 def code_to_name(code):
     """Convert encoding `code` to name."""
     for item in _encodings:
         if item[CODE] == code:
             return item[NAME]
-    raise ValueError("Code {} not found"
-                     .format(repr(code)))
+    raise ValueError("Code {!r} not found"
+                     .format(code))
 
 def detect(path):
     """
@@ -250,8 +250,8 @@ def name_to_code(name):
     for item in _encodings:
         if item[NAME] == name:
             return item[CODE]
-    raise ValueError("Name {} not found"
-                     .format(repr(name)))
+    raise ValueError("Name {!r} not found"
+                     .format(name))
 
 def translate_code(code):
     """Return normalized encoding `code`."""
@@ -260,5 +260,5 @@ def translate_code(code):
     for item in _encodings:
         if item[CODE] == code:
             return item[CODE]
-    raise ValueError("Code {} not found"
-                     .format(repr(code)))
+    raise ValueError("Code {!r} not found"
+                     .format(code))

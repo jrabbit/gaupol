@@ -36,8 +36,8 @@ class MetadataItem:
     For the string syntax and especially the localization handling, see
     freedesktop.org_'s Desktop Entry Specification_.
 
-    .. _freedesktop.org: http://www.freedesktop.org/
-    .. _Specification: http://www.freedesktop.org/wiki/Specifications/desktop-entry-spec
+    .. _freedesktop.org: https://www.freedesktop.org/
+    .. _Specification: https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/
     """
 
     def __init__(self, fields=None):
@@ -65,8 +65,8 @@ class MetadataItem:
             return True
         if value == "False":
             return False
-        raise ValueError("Invalid boolean value: {}"
-                         .format(repr(value)))
+        raise ValueError("Invalid boolean value: {!r}"
+                         .format(value))
 
     def get_field_list(self, name, fallback=None):
         """Return the list of strings value of field or `fallback`."""

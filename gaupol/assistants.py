@@ -61,7 +61,7 @@ class BuilderPage(TextAssistantPage):
 
     """Baseclass for pages of :class:`TextAssistant` built with GtkBuilder."""
 
-    _widgets = ()
+    _widgets = []
 
     def __init__(self, assistant, basename):
         """Initialize a :class:`BuilderPage` instance."""
@@ -89,7 +89,7 @@ class IntroductionPage(BuilderPage):
 
     """Page for listing all text correction tasks."""
 
-    _widgets = ("columns_combo", "subtitles_combo", "tree_view")
+    _widgets = ["columns_combo", "subtitles_combo", "tree_view"]
 
     def __init__(self, assistant):
         """Initialize a :class:`IntroductionPage` instance."""
@@ -207,7 +207,7 @@ class LocalePage(BuilderPage):
 
     _ui_file_basename = NotImplementedError
 
-    _widgets = (
+    _widgets = [
         "country_combo",
         "country_label",
         "language_combo",
@@ -215,7 +215,7 @@ class LocalePage(BuilderPage):
         "script_combo",
         "script_label",
         "tree_view",
-    )
+    ]
 
     def __init__(self, assistant):
         """Initialize a :class:`LocalePage` instance."""
@@ -241,7 +241,7 @@ class LocalePage(BuilderPage):
         if index < 0: return None
         store = self._country_combo.get_model()
         value = store[index][0]
-        return (None if value == "other" else value)
+        return None if value == "other" else value
 
     def _get_language(self):
         """Return the selected language or ``None``."""
@@ -250,7 +250,7 @@ class LocalePage(BuilderPage):
         if index < 0: return None
         store = self._language_combo.get_model()
         value = store[index][0]
-        return (None if value == "other" else value)
+        return None if value == "other" else value
 
     def _get_script(self):
         """Return the selected script or ``None``."""
@@ -259,7 +259,7 @@ class LocalePage(BuilderPage):
         if index < 0: return None
         store = self._script_combo.get_model()
         value = store[index][0]
-        return (None if value == "other" else value)
+        return None if value == "other" else value
 
     def _init_attributes(self):
         """Initialize values of page attributes."""
@@ -450,7 +450,7 @@ class CommonErrorPage(LocalePage):
     """Page for correcting common human and OCR errors."""
 
     _ui_file_basename = "common-error-page.ui"
-    _widgets = ("human_check", "ocr_check") + LocalePage._widgets
+    _widgets = ["human_check", "ocr_check"] + LocalePage._widgets
 
     def correct_texts(self, project, indices, doc):
         """Correct texts in `project`."""
@@ -536,7 +536,7 @@ class JoinSplitWordsPage(BuilderPage):
 
     """Page for joining or splitting words based on spell-check suggestions."""
 
-    _widgets = ("language_button", "join_check", "split_check")
+    _widgets = ["language_button", "join_check", "split_check"]
 
     def __init__(self, assistant):
         """Initialize a :class:`JoinSplitWordsPage` instance."""
@@ -658,7 +658,7 @@ class LineBreakOptionsPage(BuilderPage):
 
     """Page for editing line-break options."""
 
-    _widgets = (
+    _widgets = [
         "max_length_spin",
         "max_lines_spin",
         "max_skip_length_spin",
@@ -667,7 +667,7 @@ class LineBreakOptionsPage(BuilderPage):
         "skip_lines_check",
         "skip_unit_combo",
         "unit_combo",
-    )
+    ]
 
     def __init__(self, assistant):
         """Initialize a :class:`LineBreakOptionsPage` instance."""
@@ -750,7 +750,7 @@ class ProgressPage(BuilderPage):
 
     """Page for showing progress of text corrections."""
 
-    _widgets = ("message_label", "progress_bar", "status_label", "task_label")
+    _widgets = ["message_label", "progress_bar", "status_label", "task_label"]
 
     def __init__(self, assistant):
         """Initialize a :class:`ProgressPage` instance."""
@@ -787,7 +787,7 @@ class ProgressPage(BuilderPage):
     def set_progress(self, current, total=None):
         """Set current as the task progress status."""
         total = total or self._total_tasks
-        fraction = (current/total if total > 0 else 0)
+        fraction = current / total if total > 0 else 0
         self._progress_bar.set_fraction(fraction)
         text = _("{current:d} of {total:d} tasks complete")
         self._progress_bar.set_text(text.format(**locals()))
@@ -812,13 +812,13 @@ class ConfirmationPage(BuilderPage):
 
     """Page to confirm changes made after performing all tasks."""
 
-    _widgets = (
+    _widgets = [
         "mark_all_button",
         "preview_button",
         "remove_check",
         "tree_view",
         "unmark_all_button",
-    )
+    ]
 
     def __init__(self, assistant):
         """Initialize a :class:`ConfirmationPage` instance."""
@@ -833,17 +833,19 @@ class ConfirmationPage(BuilderPage):
         self._init_tree_view()
         self._init_values()
 
-    def _add_text_column(self, index, title):
+    def _add_text_column(self, index, ref_index, title):
         """Add a multiline text column to the tree view."""
-        renderer = gaupol.MultilineCellRenderer()
+        renderer = gaupol.MultilineDiffCellRenderer()
         renderer.set_show_lengths(True)
         renderer.props.editable = (index == 4)
         renderer.props.ellipsize = Pango.EllipsizeMode.END
         renderer.props.font = gaupol.util.get_font()
+        renderer.props.ref_type = ref_index - index
         renderer.props.yalign = 0
         renderer.props.xpad = 4
         renderer.props.ypad = 4
-        column = Gtk.TreeViewColumn(title, renderer, text=index)
+        column = Gtk.TreeViewColumn(
+            title, renderer, text=index, ref_text=ref_index)
         column.set_resizable(True)
         column.set_expand(True)
         self._tree_view.append_column(column)
@@ -892,8 +894,8 @@ class ConfirmationPage(BuilderPage):
         if gaupol.conf.editor.use_zebra_stripes:
             callback = self._on_renderer_set_background
             column.set_cell_data_func(renderer, callback, None)
-        self._add_text_column(3, _("Original Text"))
-        self._add_text_column(4, _("Corrected Text"))
+        self._add_text_column(3, 4, _("Original Text"))
+        self._add_text_column(4, 3, _("Corrected Text"))
         column = self._tree_view.get_column(2)
         renderer = column.get_cells()[0]
         renderer.connect("edited", self._on_tree_view_cell_edited)

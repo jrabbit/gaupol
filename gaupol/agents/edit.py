@@ -69,7 +69,7 @@ class EditAgent(aeidon.Delegate):
         page = self.get_current_page()
         path, column = page.view.get_cursor()
         row = gaupol.util.tree_path_to_row(path)
-        path = gaupol.util.tree_row_to_path(row+1)
+        path = gaupol.util.tree_row_to_path(row + 1)
         page.view.set_cursor(path, column, True)
 
     @aeidon.deco.export
@@ -113,7 +113,7 @@ class EditAgent(aeidon.Delegate):
         row = page.view.get_selected_rows()[0]
         pos = page.project.subtitles[row].end_seconds
         length = gaupol.conf.editor.stretch_length
-        value = (((pos+0.001) // length) + 1) * length
+        value = (((pos + 0.001) // length) + 1) * length
         page.project.set_end(row, value)
         register = aeidon.registers.DO
         description = _("Stretching end position")
@@ -129,7 +129,7 @@ class EditAgent(aeidon.Delegate):
         """Extend the selection up to the first subtitle."""
         page = self.get_current_page()
         row = page.view.get_selected_rows()[-1]
-        rows = list(range(0, row+1))
+        rows = list(range(0, row + 1))
         page.view.select_rows(rows)
 
     @aeidon.deco.export
@@ -145,13 +145,14 @@ class EditAgent(aeidon.Delegate):
         """Insert a new subtitle at video position."""
         mode = aeidon.modes.SECONDS
         pos = self.player.get_position(mode)
+        if pos is None: return
         page = self.get_current_page()
         starts = [x.start_seconds for x in page.project.subtitles]
         index = bisect.bisect_right(starts, pos)
         subtitle = page.project.new_subtitle()
         subtitle.start_seconds = pos
         subtitle.end_seconds = pos + 3.0
-        subtitle.main_text = "[{:d}]".format(index+1)
+        subtitle.main_text = "[{:d}]".format(index + 1)
         page.project.insert_subtitles((index,), (subtitle,))
 
     @aeidon.deco.export
@@ -179,6 +180,13 @@ class EditAgent(aeidon.Delegate):
     def _on_paste_texts_activate(self, *args):
         """Paste texts from the clipboard."""
         page = self.get_current_page()
+        text = self.x_clipboard.wait_for_text()
+        if text:
+            # Update all clipboards in case text is being
+            # copied from the external clipboard.
+            page.project.clipboard.set_string(text)
+            self._sync_clipboards(page)
+        if page.project.clipboard.is_empty(): return
         rows = page.view.get_selected_rows()
         row, col = page.view.get_focus()
         doc = page.text_column_to_document(col)
@@ -260,6 +268,7 @@ class EditAgent(aeidon.Delegate):
         mode = aeidon.modes.SECONDS
         row = page.view.get_selected_rows()[0]
         pos = self.player.get_position(mode)
+        if pos is None: return
         page.project.set_end(row, pos)
 
     @aeidon.deco.export
@@ -294,7 +303,7 @@ class EditAgent(aeidon.Delegate):
         row = page.view.get_selected_rows()[0]
         pos = page.project.subtitles[row].start_seconds
         length = gaupol.conf.editor.stretch_length
-        value = (((pos+0.001) // length) + 1) * length
+        value = (((pos + 0.001) // length) + 1) * length
         page.project.set_start(row, value)
         register = aeidon.registers.DO
         description = _("Stretching start position")
@@ -351,6 +360,7 @@ class EditAgent(aeidon.Delegate):
         page = self.get_current_page()
         col = page.view.get_columns().index(column)
         if not page.view.is_text_column(col): return
+        self._set_global_italicize(page, col)
         start, end = page.view.get_visible_range()
         end = gaupol.util.tree_path_to_row(end)
         if gaupol.util.tree_path_to_row(path) < end - 1:
@@ -374,6 +384,21 @@ class EditAgent(aeidon.Delegate):
             gaupol.util.set_cursor_normal(self.window)
         finally:
             self._revert_in_progress = False
+
+    def _set_global_italicize(self, page, col):
+        """Set global function to italicize text."""
+        # MultilineCellRenderer's CellTextView needs to know how
+        # to italicize text. Pass ugly via a global function.
+        gaupol.italic_tag = None
+        gaupol.italicize = None
+        if col is None: return
+        if not page.view.is_text_column(col): return
+        doc = page.text_column_to_document(col)
+        markup = page.project.get_markup(doc)
+        if markup is None: return
+        if markup.italic_tag is None: return
+        gaupol.italic_tag = markup.italic_tag
+        gaupol.italicize = markup.italicize
 
     def _set_unsafe_enabled(self, enabled):
         """Set enabled states of unsafe actions."""

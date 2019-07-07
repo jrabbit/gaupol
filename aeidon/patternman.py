@@ -65,7 +65,7 @@ class PatternManager:
                     last_index = j
                     if policy == "Replace":
                         filtered_patterns[j] = None
-            filtered_patterns.insert(last_index+1, pattern)
+            filtered_patterns.insert(last_index + 1, pattern)
             while None in filtered_patterns:
                 filtered_patterns.remove(None)
         return filtered_patterns
@@ -191,7 +191,15 @@ class PatternManager:
                 patterns[-1].local = local
             else: # [_]KEY=VALUE
                 name, value = line.split("=", 1)
-                name = (name[1:] if name.startswith("_") else name)
+                # Translatable fields used to be marked with a leading
+                # underscore prior to version 1.3. We continue to support that
+                # syntax in case users have local pattern files.
+                name = name[1:] if name.startswith("_") else name
+                # Regular expression patterns and replacements use null
+                # character to avoid syntax issues that go against the GKeyFile
+                # spec and would be "fixed" by msgfmt when merging translations.
+                # https://github.com/otsaloma/gaupol/issues/70
+                value = re.sub(r"\\0(?!\d)", "", value)
                 patterns[-1].set_field(name, value)
 
     def save_config(self, script=None, language=None, country=None):
@@ -214,7 +222,7 @@ class PatternManager:
             written_names.add(name)
             name = name.replace("&", "&amp;")
             name = name.replace('"', "&quot;")
-            enabled = ("true" if pattern.enabled else "false")
+            enabled = "true" if pattern.enabled else "false"
             lines.append('  <pattern name="{}" enabled="{}"/>'
                          .format(name, enabled))
 

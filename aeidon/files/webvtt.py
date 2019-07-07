@@ -37,13 +37,13 @@ class WebVTT(aeidon.SubtitleFile):
     _re_comment = re.compile(r"^\s*NOTE\b")
     _re_style = re.compile(r"^\s*STYLE\b")
     _re_time_line = re.compile((
-            # Techically all these fields should have fixed widths, but in the
-            # name of being liberal in accepting input, accept lesser widths
-            # assuming that they are just lacking zero-padding from the side
-            # that is farther from the decimal point.
-            r"^(-?(?:\d{1,2}:)?\d{1,2}:\d{1,2}\.\d{1,3}) -->"
-            r" (-?(?:\d{1,2}:)?\d{1,2}:\d{1,2}\.\d{1,3})"
-            r"(\s+.+)?\s*$"))
+        # Techically all these fields should have fixed widths, but in the
+        # name of being liberal in accepting input, accept lesser widths
+        # assuming that they are just lacking zero-padding from the side
+        # that is farther from the decimal point.
+        r"^(-?(?:\d{1,2}:)?\d{1,2}:\d{1,2}\.\d{1,3}) -->"
+        r" (-?(?:\d{1,2}:)?\d{1,2}:\d{1,2}\.\d{1,3})"
+        r"(\s+.+)?\s*$"))
 
     def read(self):
         """
@@ -116,7 +116,7 @@ class WebVTT(aeidon.SubtitleFile):
         writen = lambda x: f.write(x + "\n")
         nwriten = lambda x: f.write("\n" + x + "\n")
         writen(self.header.strip() or "WEBVTT")
-        first = (3 if subtitles[-1].end_seconds < 3600 else 0)
+        first = 3 if subtitles[-1].end_seconds < 3600 else 0
         for i, subtitle in enumerate(subtitles):
             if subtitle.webvtt.style:
                 nwriten(subtitle.webvtt.style)
