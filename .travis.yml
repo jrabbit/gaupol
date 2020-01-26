@@ -8,9 +8,12 @@ python:
   - 3.7
 before_install:
   - sudo apt-get update -qq
-  - sudo apt install -y gir1.2-gspell-1
+  - sudo apt install -y gir1.2-gspell-1 \
+    gir1.2-gtk-3.0 \
+    iso-codes \
+    xvfb
   - pip install poetry
 script:
   - poetry install -v
-  - poetry run py.test aeidon
+  - xvfb-run poetry run py.test aeidon
   - poetry run flake8 aeidon
