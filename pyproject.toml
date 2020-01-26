@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aeidon"
-version = "1.6.0"
+version = "1.7.0"
 description = "aeidon is a Python package for reading, writing and manipulating text-based subtitle files. It is used by the gaupol package, which provides a subtitle editor with a GTK+ user interface."
 authors = ["Jack Laxson <jackjrabbit+pypi@gmail.com>", "Osmo Salomaa <otsaloma@iki.fi>"]
 packages = [{include = "aeidon"}]
@@ -11,12 +11,12 @@ homepage = "https://otsaloma.io/gaupol/"
 
 [tool.poetry.dependencies]
 python = "^3.5"
-pyenchant = "^2.0"
 chardet = "^3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.0"
 flake8 = "^3.7"
+
 
 [build-system]
 requires = ["poetry>=0.12"]
