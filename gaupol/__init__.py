@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""GTK+ user interface for the Gaupol subtitle editor."""
+"""GTK user interface for the Gaupol subtitle editor."""
 
-__version__ = "1.6"
+__version__ = "1.7"
 COMBO_SEPARATOR = "<separator/>"
 
 import sys
@@ -30,6 +30,12 @@ if hasattr(sys, "frozen"):
 
 import aeidon
 import gi
+import os
+
+# Disable gst-vaapi as it doesn't seem to work with gtksink.
+# https://github.com/otsaloma/gaupol/issues/79
+os.environ["LIBVA_DRIVER_NAME"] = "null"
+os.environ["LIBVA_DRIVERS_PATH"] = "/dev/null"
 
 gi.require_version("Gdk", "3.0")
 gi.require_version("Gtk", "3.0")
@@ -38,75 +44,67 @@ for module, version in {
     "Gst": "1.0",
     "GstPbutils": "1.0",
     "GstVideo": "1.0",
-    "GtkSpell": "3.0",
 }.items():
     with aeidon.util.silent(Exception):
         gi.require_version(module, version)
-
-from gi.repository import GLib
-from gi.repository import GObject
 
 with aeidon.util.silent(Exception):
     from gi.repository import Gst
     Gst.init(None)
 
-from gaupol.urls import *
-from gaupol import util
-from gaupol.enums import *
-from gaupol.errors import *
-from gaupol.attrdict import *
-from gaupol.config import ConfigurationStore
+from gaupol.urls import * # noqa
+from gaupol import util # noqa
+from gaupol.enums import * # noqa
+from gaupol.errors import * # noqa
+from gaupol.attrdict import * # noqa
+from gaupol.config import ConfigurationStore # noqa
 conf = ConfigurationStore()
-from gaupol import style
-from gaupol import ruler
-from gaupol.entries import *
-from gaupol.renderers import *
-from gaupol.floatlabel import *
-from gaupol.view import *
-from gaupol.page import *
-from gaupol.player import *
-from gaupol.dialogs.builder import *
-from gaupol.dialogs.file import *
-from gaupol.dialogs.open import *
-from gaupol.dialogs.save import *
-from gaupol.dialogs.video import *
-from gaupol.dialogs.append import *
-from gaupol.dialogs.about import *
-from gaupol.dialogs.debug import *
-from gaupol.dialogs.duration_adjust import *
-from gaupol.dialogs.encoding import *
-from gaupol.dialogs.framerate_convert import *
-from gaupol.dialogs.insert import *
-from gaupol.dialogs.language import *
-from gaupol.dialogs.message import *
-from gaupol.dialogs.multi_close import *
-from gaupol.dialogs.multi_save import *
-from gaupol.dialogs.preferences import *
-from gaupol.dialogs.preview_error import *
-from gaupol.dialogs.search import *
-from gaupol.dialogs.position_shift import *
-from gaupol.dialogs.spell_check import *
-from gaupol.dialogs.split import *
-from gaupol.dialogs.text_edit import *
-from gaupol.dialogs.position_transform import *
-from gaupol.assistants import *
-from gaupol.action import *
-from gaupol import actions
-from gaupol.extension import *
-from gaupol.extensionman import *
-from gaupol import agents
-from gaupol.application import *
-from gaupol.applicationman import ApplicationManager
-from gaupol.unittest import *
+from gaupol import style # noqa
+from gaupol import ruler # noqa
+from gaupol.entries import * # noqa
+from gaupol.renderers import * # noqa
+from gaupol.floatlabel import * # noqa
+from gaupol.spell import * # noqa
+from gaupol.view import * # noqa
+from gaupol.page import * # noqa
+from gaupol.player import * # noqa
+from gaupol.dialogs.builder import * # noqa
+from gaupol.dialogs.file import * # noqa
+from gaupol.dialogs.open import * # noqa
+from gaupol.dialogs.save import * # noqa
+from gaupol.dialogs.video import * # noqa
+from gaupol.dialogs.append import * # noqa
+from gaupol.dialogs.about import * # noqa
+from gaupol.dialogs.debug import * # noqa
+from gaupol.dialogs.duration_adjust import * # noqa
+from gaupol.dialogs.encoding import * # noqa
+from gaupol.dialogs.framerate_convert import * # noqa
+from gaupol.dialogs.insert import * # noqa
+from gaupol.dialogs.language import * # noqa
+from gaupol.dialogs.message import * # noqa
+from gaupol.dialogs.multi_close import * # noqa
+from gaupol.dialogs.multi_save import * # noqa
+from gaupol.dialogs.preferences import * # noqa
+from gaupol.dialogs.preview_error import * # noqa
+from gaupol.dialogs.search import * # noqa
+from gaupol.dialogs.position_shift import * # noqa
+from gaupol.dialogs.spell_check import * # noqa
+from gaupol.dialogs.split import * # noqa
+from gaupol.dialogs.text_edit import * # noqa
+from gaupol.dialogs.position_transform import * # noqa
+from gaupol.assistants import * # noqa
+from gaupol.action import * # noqa
+from gaupol import actions # noqa
+from gaupol.extension import * # noqa
+from gaupol.extensionman import * # noqa
+from gaupol import agents # noqa
+from gaupol.application import * # noqa
+from gaupol.applicationman import ApplicationManager # noqa
+from gaupol.unittest import * # noqa
 
 def main(args):
     """Initialize application."""
     global appman
-    # Needed to see application icon on Wayland, while we don't yet
-    # use the reverse domain application ID with Gtk.Application.
-    # https://wiki.gnome.org/Projects/GnomeShell/ApplicationBased
-    # https://github.com/otsaloma/gaupol/issues/62
-    GLib.set_prgname("gaupol")
     aeidon.i18n.bind()
     appman = ApplicationManager(args)
     raise SystemExit(appman.run())

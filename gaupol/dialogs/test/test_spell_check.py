@@ -27,23 +27,20 @@ class TestSpellCheckDialog(gaupol.TestCase):
         self.dialog.run()
         self.dialog.destroy()
 
-    def run__show_error_dialog(self):
-        self.dialog._show_error_dialog("test")
-
     def setup_method(self, method):
-        gaupol.conf.spell_check.language = "en"
+        # Don't interact with the config files at all.
+        aeidon.SpellChecker.add_to_personal = aeidon.SpellChecker.add_to_session
+        aeidon.SpellChecker.read_replacements = lambda *args: None
+        aeidon.SpellChecker.write_replacements = lambda *args: None
+        language = self.get_spell_check_language("en")
+        gaupol.conf.spell_check.language = language
         self.application = self.new_application()
         for page in self.application.pages:
             for subtitle in page.project.subtitles:
                 subtitle.main_text = subtitle.main_text.replace("a", "x")
                 subtitle.tran_text = subtitle.tran_text.replace("a", "x")
             page.reload_view_all()
-        self.dialog = gaupol.SpellCheckDialog(
-            self.application.window, self.application)
-        # Avoid adding words to either enchant's or a backend's
-        # personal word list or gaupol's personal replacement list.
-        self.dialog._checker.dict.add = lambda *args: None
-        self.dialog._personal_dir = aeidon.temp.create_directory()
+        self.dialog = gaupol.SpellCheckDialog(self.application.window, self.application)
         self.dialog.show()
 
     def test__on_add_button_clicked(self):

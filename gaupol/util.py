@@ -69,11 +69,27 @@ def get_content_size(widget, font=None):
     raise ValueError("Unsupported container type: {!r}"
                      .format(type(widget)))
 
+def get_default_player():
+    """Return the default video player to use for preview."""
+    players = [aeidon.players.MPV, aeidon.players.MPLAYER, aeidon.players.VLC]
+    players = [x for x in players if x.found]
+    return players[0] if players else aeidon.players.MPV
+
 def get_font():
     """Return custom font or blank string."""
     return (gaupol.conf.editor.custom_font if
             gaupol.conf.editor.use_custom_font and
             gaupol.conf.editor.custom_font else "")
+
+def get_gspell_version():
+    """Return :mod:`Gspell` version number as string or ``None``."""
+    try:
+        # XXX: The full version number is not available.
+        # https://gitlab.gnome.org/GNOME/gspell/issues/8
+        from gi.repository import Gspell
+        return str(Gspell._version)
+    except Exception:
+        return None
 
 def get_gst_version():
     """Return :mod:`Gst` version number as string or ``None``."""
@@ -171,15 +187,6 @@ def gst_available():
               file=sys.stderr)
     return True
 
-@aeidon.deco.once
-def gtkspell_available():
-    """Return ``True`` if :mod:`GtkSpell` module is available."""
-    try:
-        from gi.repository import GtkSpell
-        return True
-    except Exception:
-        return False
-
 def hex_to_rgba(string):
     """Return a :class:`Gdk.RGBA` for hexadecimal `string`."""
     rgba = Gdk.RGBA()
@@ -206,7 +213,7 @@ def install_module(name, obj):
     gaupol.__dict__[name] = inspect.getmodule(obj)
 
 def iterate_main():
-    """Iterate the GTK+ main loop while events are pending."""
+    """Iterate the GTK main loop while events are pending."""
     while Gtk.events_pending():
         Gtk.main_iteration()
 
@@ -253,16 +260,11 @@ def pack_start_fill(box, widget, padding=0):
 
 def prepare_text_view(text_view):
     """Set spell-check, line-length margin and font properties."""
-    if (gaupol.util.gtkspell_available() and
+    if (gaupol.SpellChecker.available() and
         gaupol.conf.spell_check.inline):
-        from gi.repository import GtkSpell
         language = gaupol.conf.spell_check.language
         with aeidon.util.silent(Exception):
-            checker = GtkSpell.Checker()
-            checker.set_language(language)
-            def on_language_changed(checker, lang, *args):
-                gaupol.conf.spell_check.language = lang
-            checker.connect("language-changed", on_language_changed)
+            checker = gaupol.SpellChecker(language)
             checker.attach(text_view)
     connect = gaupol.conf.editor.connect
     def update_margin(section, value, text_view):

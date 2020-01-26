@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """cx_Freeze installation routines built on top of setup.py."""
 
@@ -17,12 +17,6 @@ include_files.append((os.path.join(gnome_dir, "etc"), "etc"))
 include_files.append((os.path.join(gnome_dir, "lib"), "lib"))
 include_files.append((os.path.join(gnome_dir, "share"), "share"))
 
-# PyEnchant ships with DLLs provided by pygi-aio as well.
-# Keep the pygio-aio DLLs, but add PyEnchant data files.
-enchant_dir = os.path.join(site.getsitepackages()[1], "enchant")
-include_files.append((os.path.join(enchant_dir, "lib"), "lib"))
-include_files.append((os.path.join(enchant_dir, "share"), "share"))
-
 setup_kwargs.update({
     "options": {"build_exe": {
         "compressed": False,
@@ -33,13 +27,13 @@ setup_kwargs.update({
     "executables": [cx_Freeze.Executable(
         script="bin/gaupol",
         base="WIN32GUI",
-        icon="data/icons/gaupol.ico",
+        icon="data/icons/io.otsaloma.gaupol.ico",
     )],
 })
 
 if __name__ == "__main__":
     cx_Freeze.setup(**setup_kwargs)
-    # Enable header bars on builtin GTK+ dialogs.
+    # Enable header bars on builtin GTK dialogs.
     path = glob.glob("build/exe.*/etc/gtk-3.0/settings.ini")[0]
     with open(path, "a", encoding="us_ascii") as f:
         f.write("\ngtk-dialogs-use-header = 1\n")

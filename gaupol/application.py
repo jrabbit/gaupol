@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""GTK+ user interface controller for :class:`aeidon.Project`."""
+"""GTK user interface controller for :class:`aeidon.Project`."""
 
 import aeidon
 import gaupol
@@ -60,7 +60,7 @@ class ApplicationMeta(type):
 class Application(aeidon.Observable, metaclass=ApplicationMeta):
 
     """
-    GTK+ user interface controller for :class:`aeidon.Project`.
+    GTK user interface controller for :class:`aeidon.Project`.
 
     :ivar clipboard: Instance of :class:`aeidon.Clipboard` used
     :ivar counter: Iterator used for naming unsaved documents
@@ -340,8 +340,8 @@ class Application(aeidon.Observable, metaclass=ApplicationMeta):
         self.window = Gtk.ApplicationWindow(
             application=getattr(gaupol, "appman", None))
         self.window.set_show_menubar(True)
-        self.window.set_icon_name("gaupol")
-        Gtk.Window.set_default_icon_name("gaupol")
+        self.window.set_icon_name("io.otsaloma.gaupol")
+        Gtk.Window.set_default_icon_name("io.otsaloma.gaupol")
         self.window.set_default_size(*gaupol.conf.application_window.size)
         self.window.move(*gaupol.conf.application_window.position)
         if gaupol.conf.application_window.maximized:

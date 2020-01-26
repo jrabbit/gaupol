@@ -13,4 +13,3 @@ setup(name="aeidon",
                    "Topic :: Multimedia :: Video",
                    "Programming Language :: Python :: 3",]
       )
-

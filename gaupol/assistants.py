@@ -552,17 +552,18 @@ class JoinSplitWordsPage(BuilderPage):
 
     def correct_texts(self, project, indices, doc):
         """Correct texts in `project`."""
-        import enchant
         language = gaupol.conf.spell_check.language
         if gaupol.conf.join_split_words.join:
             try:
+                # Can fail if the spell-check backend or dictionary is missing.
                 project.spell_check_join_words(indices, doc, language)
-            except enchant.Error as error:
+            except Exception as error:
                 return self._show_error_dialog(str(error))
         if gaupol.conf.join_split_words.split:
             try:
+                # Can fail if the spell-check backend or dictionary is missing.
                 project.spell_check_split_words(indices, doc, language)
-            except enchant.Error as error:
+            except Exception as error:
                 return self._show_error_dialog(str(error))
 
     def _init_values(self):
@@ -1047,7 +1048,8 @@ class TextAssistant(Gtk.Assistant):
         self.set_title(_("Correct Texts"))
         self.add_page(self._introduction_page)
         self.add_page(HearingImpairedPage(self))
-        if aeidon.util.enchant_and_dicts_available():
+        if (aeidon.SpellChecker.available() and
+            aeidon.SpellChecker.list_languages()):
             self.add_page(JoinSplitWordsPage(self))
         self.add_page(CommonErrorPage(self))
         self.add_page(CapitalizationPage(self))

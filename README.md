@@ -3,6 +3,7 @@ Gaupol
 
 [![Build Status](https://travis-ci.org/otsaloma/gaupol.svg)](https://travis-ci.org/otsaloma/gaupol)
 [![Packages](https://repology.org/badge/tiny-repos/gaupol.svg)](https://repology.org/metapackage/gaupol)
+[![Flathub](https://img.shields.io/badge/download-flathub-blue.svg)](https://flathub.org/apps/details/io.otsaloma.gaupol)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/otsaloma/gaupol)
 
 Gaupol is an editor for text-based subtitle files. It supports multiple
@@ -38,15 +39,14 @@ and gettext to build the Flatpak.
 
 #### Source
 
-Gaupol requires Python ≥ 3.2, PyGObject ≥ 3.12 and GTK+ ≥ 3.12.
+Gaupol requires Python ≥ 3.2, PyGObject ≥ 3.12 and GTK ≥ 3.12.
 Additionally, during installation you need gettext. Optional, but
 strongly recommended dependencies include:
 
 | Dependency | Version | Required for |
 | :--------- | :------ | :----------- |
 | [GStreamer](https://gstreamer.freedesktop.org/) | ≥ 1.6 | integrated video player |
-| [PyEnchant](https://github.com/rfk/pyenchant) | ≥ 1.4.0 | spell-check |
-| [GtkSpell](http://gtkspell.sourceforge.net/) | ≥ 3.0.0 | inline spell-check |
+| [gspell](https://wiki.gnome.org/Projects/gspell) | ≥ 1.0.0 | spell-check |
 | [iso-codes](https://salsa.debian.org/iso-codes-team/iso-codes) | ≥ 3.67 | translations |
 | [chardet](https://github.com/chardet/chardet) | any | character encoding auto-detection |
 
@@ -58,10 +58,10 @@ On Debian/Ubuntu you can install the dependencies with the following
 command.
 
     sudo apt install gettext \
+                     gir1.2-gspell-1 \
                      gir1.2-gst-plugins-base-1.0 \
                      gir1.2-gstreamer-1.0 \
                      gir1.2-gtk-3.0 \
-                     gir1.2-gtkspell3-3.0 \
                      gstreamer1.0-gtk3 \
                      gstreamer1.0-libav \
                      gstreamer1.0-plugins-bad \
@@ -71,7 +71,6 @@ command.
                      python3 \
                      python3-chardet \
                      python3-dev \
-                     python3-enchant \
                      python3-gi \
                      python3-gi-cairo
 
